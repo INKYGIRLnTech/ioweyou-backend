@@ -1,12 +1,13 @@
-# app/main.py
+from fastapi import FastAPI
+from app.database import Base, engine   
+from app.models import user
 
-from app.routes import user_routes  # We'll create this soon
 
-app = ()
+app = FastAPI()
 
-# Register routes
-app.include_router(user_routes.router)
+# Create tables
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
-def root():
+def read_root():
     return {"message": "Welcome to IOWEYOU"}

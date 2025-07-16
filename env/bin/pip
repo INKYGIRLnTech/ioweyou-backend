@@ -1,4 +1,4 @@
-#!/Users/hazelcurvin/ioweyou-backend/env/bin/python3.12
+#!/Users/hazelcurvin/Documents/ioweyou-backend/env/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys
