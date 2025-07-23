@@ -5,9 +5,5 @@ from app.models import user, loan
 
 app = FastAPI()
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to IOWEYOU"}
+app.include_router(user.router, prefix="/users", tags=["users"])
+app.include_router(loan.router, prefix="/loans", tags=["loan
