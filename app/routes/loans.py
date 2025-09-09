@@ -12,7 +12,7 @@ models.Base.metadata.create_all(bind=engine)
 router = APIRouter()
 
 # Create a new loan
-@router.post("", response_model=schemas.LoanResponse)
+@router.post("/", response_model=schemas.LoanResponse)
 def create_loans(loan: schemas.LoanCreate, db: Session = Depends(get_db)):
     try:
         new_loan = models.Loan(**loan.dict())
@@ -30,13 +30,13 @@ def create_loans(loan: schemas.LoanCreate, db: Session = Depends(get_db)):
 
 
 # Get all loans
-@router.get("", response_model=List[schemas.LoanResponse])
+@router.get("/", response_model=List[schemas.LoanResponse])
 def get_loans(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     loans = db.query(models.Loan).offset(skip).limit(limit).all()
     return loans
 
 # Get a loan by ID
-@router.get("{loan_id}", response_model=schemas.LoanResponse)
+@router.get("/{loan_id}", response_model=schemas.LoanResponse)
 def get_loan(loan_id: int, db: Session = Depends(get_db)):
     db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
     if db_loan is None:
@@ -44,7 +44,7 @@ def get_loan(loan_id: int, db: Session = Depends(get_db)):
     return db_loan
 
 # Update a loan
-@router.put("{loan_id}", response_model=schemas.LoanResponse)
+@router.put("/{loan_id}", response_model=schemas.LoanResponse)
 def update_loan(loan_id: int, loan: schemas.LoanUpdate, db: Session = Depends(get_db)):
     db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
     if db_loan is None:
@@ -58,7 +58,7 @@ def update_loan(loan_id: int, loan: schemas.LoanUpdate, db: Session = Depends(ge
     return db_loan
 
 # Delete a loan
-@router.delete("{loan_id}", response_model=schemas.LoanResponse)
+@router.delete("/{loan_id}", response_model=schemas.LoanResponse)
 def delete_loan(loan_id: int, db: Session = Depends(get_db)):
     db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
     if db_loan is None:
