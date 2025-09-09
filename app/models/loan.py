@@ -22,4 +22,4 @@ class Loan(Base):
     borrower = relationship("User", foreign_keys=[borrower_id], back_populates="loans_received")
 
     def __repr__(self):
-        return f"<Loan(id={self.id}, amount={self.amount}, interest_rate={self.interest_rate}, term_months={self.term_months})>"
+        return f"<Loan(id={self.id}, amount={self.amount}, interest_rate={self.interest_rate})>"

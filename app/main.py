@@ -1,9 +1,23 @@
 from fastapi import FastAPI
 from app.database import Base, engine   
-from app.models import user, loan
+from app.routes.loans import router as loans_router
+from app.routes.user import router as user_router
+import email_validator
 
 
 app = FastAPI()
 
-app.include_router(user.router, prefix="/users", tags=["users"])
-app.include_router(loan.router, prefix="/loans", tags=["loan
+app.include_router(loans_router, prefix="loans", tags=["loans"])
+app.include_router(user_router, prefix="users", tags=["users"])
+
+# Print all registered route paths for debugging
+print("Registered routes:")
+for r in app.routes:
+    print(f"{r.path} - {r.name}")
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to IOWEYOU"}
