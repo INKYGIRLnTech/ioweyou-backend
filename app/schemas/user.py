@@ -1,15 +1,18 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
+# Shared properties
 class UserBase(BaseModel):
-    name: str
+    username: str
     email: EmailStr
 
+# Properties for user creation
 class UserCreate(UserBase):
-    password: str
+    password: str # raw password, will be hashed before storing
 
+# Properties for returning user info in responses
 class UserResponse(UserBase):
     id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True

@@ -18,8 +18,8 @@ class Loan(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     is_active = Column(Boolean, default=True)
 
-    lender = relationship("User", foreign_keys=[lender_id], back_populates="loans_given")
-    borrower = relationship("User", foreign_keys=[borrower_id], back_populates="loans_received")
+    lender = relationship("User", back_populates="loans_given", foreign_keys=[lender_id])
+    borrower = relationship("User", back_populates="loans_received", foreign_keys=[borrower_id])
 
     def __repr__(self):
         return f"<Loan(id={self.id}, amount={self.amount}, interest_rate={self.interest_rate})>"
