@@ -7,8 +7,8 @@ import email_validator
 
 app = FastAPI()
 
-app.include_router(loans_router, prefix="/loans", tags=["loans"])
-app.include_router(user_router, prefix="/users", tags=["users"])
+app.include_router(loans_router)
+app.include_router(user_router)
 
 # Print all registered route paths for debugging
 print("Registered routes:")

@@ -19,7 +19,12 @@ class Loan(Base):
     is_active = Column(Boolean, default=True)
 
     lender = relationship("User", back_populates="loans_given", foreign_keys=[lender_id])
-    borrower = relationship("User", back_populates="loans_received", foreign_keys=[borrower_id])
+    borrower = relationship("User", back_populates="loans_taken", foreign_keys=[borrower_id])
 
     def __repr__(self):
-        return f"<Loan(id={self.id}, amount={self.amount}, interest_rate={self.interest_rate})>"
+        return (
+            f"<Loan(id={self.id}, lender_id={self.lender_id}, borrower_id={self.borrower_id}, "
+            f"amount={self.amount}, interest_rate={self.interest_rate}, status='{self.status}', "
+            f"due_date={self.due_date}, created_at={self.created_at}, updated_at={self.updated_at}, "
+            f"is_active={self.is_active})>"
+        )

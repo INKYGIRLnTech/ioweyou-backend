@@ -1,69 +1,92 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-from app.database import SessionLocal, engine
-from app.dependencies import get_db
-from app import models, schemas
 from datetime import datetime, timezone
 
-# Make sure the tables are created
-models.Base.metadata.create_all(bind=engine)
+from app.dependencies import get_db
+from app.models.loan import Loan
+from app.models.user import User
+from app.schemas.loan import LoanCreate, LoanUpdate, LoanResponse
+from app import models, schemas
 
-router = APIRouter()
+
+router = APIRouter(
+    prefix="/loans",
+    tags=["loans"],
+)
 
 # Create a new loan
-@router.post("/", response_model=schemas.LoanResponse)
-def create_loans(loan: schemas.LoanCreate, db: Session = Depends(get_db)):
-    try:
-        new_loan = models.Loan(**loan.dict())
-        db.add(new_loan)
-        db.commit()
-        db.refresh(new_loan)
+@router.post("/", response_model=LoanResponse)
+def create_loan(loan: LoanCreate, db: Session = Depends(get_db)):
+    lender = db.query(User).filter(User.id == loan.lender_id).first()
+    borrower = db.query(User).filter(User.id == loan.borrower_id).first()
 
-        print("DEBUG: Created Loan object ->", new_loan)
-
-        return new_loan
-    except Exception as e:
-        db.rollback()
-        print(f"Error creating loan: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-# Get all loans
-@router.get("/", response_model=List[schemas.LoanResponse])
-def get_loans(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    loans = db.query(models.Loan).offset(skip).limit(limit).all()
-    return loans
-
-# Get a loan by ID
-@router.get("/{loan_id}", response_model=schemas.LoanResponse)
-def get_loan(loan_id: int, db: Session = Depends(get_db)):
-    db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
-    if db_loan is None:
-        raise HTTPException(status_code=404, detail="Loan not found")
-    return db_loan
-
-# Update a loan
-@router.put("/{loan_id}", response_model=schemas.LoanResponse)
-def update_loan(loan_id: int, loan: schemas.LoanUpdate, db: Session = Depends(get_db)):
-    db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
-    if db_loan is None:
-        raise HTTPException(status_code=404, detail="Loan not found")
+    if not lender or not borrower:
+        raise HTTPException(status_code=400, detail="Lender or borrower are not found")
     
-    for key, value in loan.dict(exclude_unset=True).items():
-        setattr(db_loan, key, value)
-    
+    db_loan = Loan(
+        lender_id=loan.lender_id,
+        borrower_id=loan.borrower_id,
+        amount=loan.amount,
+        interest_rate=loan.interest_rate,
+        status=loan.status,
+        due_date=loan.due_date,
+        created_at=datetime.now(timezone.utc),  
+        updated_at=datetime.now(timezone.utc),
+    )
+    db.add(db_loan)
     db.commit()
     db.refresh(db_loan)
+
     return db_loan
 
-# Delete a loan
-@router.delete("/{loan_id}", response_model=schemas.LoanResponse)
-def delete_loan(loan_id: int, db: Session = Depends(get_db)):
-    db_loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
-    if db_loan is None:
+
+# Get loan by ID
+@router.get("/{loan_id}", response_model=LoanResponse)
+def get_loan(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(Loan).filter(Loan.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    return loan
+
+# Update a loan status (approve/reject)
+@router.put("/{loan_id}", response_model=LoanResponse)
+def update_loan(loan_id: int, loan_update: LoanUpdate, db: Session = Depends(get_db)):
+    loan = db.query(Loan).filter(Loan.id == loan_id).first()
+    if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
     
-    db.delete(db_loan)
+    for field, value in loan_update.dict(exclude_unset=True).items():
+        setattr(loan, field, value)
+
+        loan.updated_at = datetime.now(timezone.utc)
     db.commit()
-    return db_loan
+    db.refresh(loan)
+
+    return loan
+
+# List all loans
+@router.get("/", response_model=list[LoanResponse])
+def list_loans(
+    lender_id: int | None = None,
+    borrower_id: int | None = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(Loan)
+
+    if lender_id: 
+        query = query.filter(Loan.lender_id == lender_id)
+    if borrower_id:
+        query = query.filter(Loan.borrower_id == borrower_id)
+
+    return query.all()
+
+# Delete a loan
+@router.delete("/{loan_id}")
+def delete_loan(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(Loan).filter(Loan.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    
+    db.delete(loan)
+    db.commit()
+    return {"detail": f"Loan {loan_id} deleted successfully"}
