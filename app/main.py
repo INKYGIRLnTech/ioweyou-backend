@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.database import Base, engine   
 from app.routes.loans import router as loans_router
 from app.routes.user import router as user_router
+from app.routes.auth import router as auth_router
 import email_validator
 
 
@@ -9,6 +10,7 @@ app = FastAPI()
 
 app.include_router(loans_router)
 app.include_router(user_router)
+app.include_router(auth_router)
 
 # Print all registered route paths for debugging
 print("Registered routes:")
