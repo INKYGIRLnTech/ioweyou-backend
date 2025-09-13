@@ -55,7 +55,7 @@ def update_loan(loan_id: int, loan_update: LoanUpdate, db: Session = Depends(get
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
     
-    for field, value in loan_update.dict(exclude_unset=True).items():
+    for field, value in loan_update.model_dump(exclude_unset=True).items():
         setattr(loan, field, value)
 
         loan.updated_at = datetime.now(timezone.utc)
