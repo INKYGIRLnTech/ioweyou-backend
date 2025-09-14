@@ -20,20 +20,18 @@ def test_auth_login_success_and_failure():
     )
     assert create_resp.status_code == 200, create_resp.text
 
-    # Successful login
-    login_ok = client.post(
-        "/auth/login",
-        json={"email": "eve@example.com", "password": "secret"},
-    )
+    # Successful login (get tokens)
+    login_ok = client.post("/auth/login", json={"email": "eve@example.com", "password": "secret"})
     assert login_ok.status_code == 200, login_ok.text
     body = login_ok.json()
-    assert body["authenticated"] is True
-    assert body["user"]["email"] == "eve@example.com"
+    assert "access_token" in body and "refresh_token" in body
 
     # Failed login (bad password)
-    login_bad = client.post(
-        "/auth/login",
-        json={"email": "eve@example.com", "password": "wrong"},
-    )
+    login_bad = client.post("/auth/login", json={"email": "eve@example.com", "password": "wrong"})
     assert login_bad.status_code == 401
 
+    # Refresh token
+    refresh = client.post("/auth/refresh", headers={"Authorization": f"Bearer {body['refresh_token']}"})
+    assert refresh.status_code == 200
+    refreshed = refresh.json()
+    assert "access_token" in refreshed

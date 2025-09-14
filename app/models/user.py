@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    role = Column(String, nullable=True, default='user')
 
     # Relationships to loans
     loans_given = relationship("Loan", back_populates="lender", foreign_keys="Loan.lender_id")

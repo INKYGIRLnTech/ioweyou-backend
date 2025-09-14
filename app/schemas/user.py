@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 # Properties for user creation
 class UserCreate(UserBase):
     password: str  # raw password, will be hashed before storing
+    role: str | None = None
 
 # Properties for returning user info in responses
 class UserResponse(UserBase):
