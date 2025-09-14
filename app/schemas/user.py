@@ -5,6 +5,7 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    hashed_password: str
 
 # Properties for user creation
 class UserCreate(UserBase):
