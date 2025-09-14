@@ -5,11 +5,10 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    hashed_password: str
 
 # Properties for user creation
 class UserCreate(UserBase):
-    password: str # raw password, will be hashed before storing
+    password: str  # raw password, will be hashed before storing
 
 # Properties for returning user info in responses
 class UserResponse(UserBase):
